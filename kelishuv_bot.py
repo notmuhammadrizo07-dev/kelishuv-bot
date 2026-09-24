@@ -45,7 +45,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
-BOT_TOKEN = "8709820987:AAG3eY4_sBEgtUDvlDyaJpZ4h65fKNtwPz4"
+BOT_TOKEN = "8709820987:AAFqYogL4-35MRFce5P6S3PemfVGGweZB0Q"
 DB_PATH = "kelishuv.db"
 
 REWARD_TASK_DONE = 5000
@@ -693,6 +693,7 @@ async def fallback_handler(message: Message):
 async def main():
     init_db()
     bot = Bot(token=BOT_TOKEN)
+    await bot.delete_webhook(drop_pending_updates=True)
     asyncio.create_task(daily_digest_loop(bot))
     await dp.start_polling(bot)
 
