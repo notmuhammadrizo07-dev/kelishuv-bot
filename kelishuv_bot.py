@@ -297,7 +297,7 @@ async def record_and_notify(bot: Bot, sender_chat_id: int, delta: int, reason: s
     notify_text = (
         f"🔔 Yangilanish!\n{sign}{fmt(delta)} so'm — {reason}\n\n{balance_status_text()}"
     )
-    await broadcast(bot, sender_chat_id, notify_text)
+    asyncio.create_task(broadcast(bot, sender_chat_id, notify_text))
     return new_balance, kmsg
 
 
@@ -449,100 +449,147 @@ async def history_command(message: Message):
 
 @dp.callback_query(F.data == "hw_done")
 async def cb_hw_done(cq: CallbackQuery):
+    try:
+        await cq.answer()
+    except Exception:
+        pass
     new_balance, kmsg = await record_and_notify(cq.message.bot, cq.message.chat.id, REWARD_TASK_DONE, "Uyga vazifa bajarildi")
     await show_result(cq.message, REWARD_TASK_DONE, "Uyga vazifa bajarildi", new_balance, kmsg)
-    await cq.answer()
 
 
 @dp.callback_query(F.data == "hw_not_done")
 async def cb_hw_not_done(cq: CallbackQuery):
+    try:
+        await cq.answer()
+    except Exception:
+        pass
     new_balance, kmsg = await record_and_notify(cq.message.bot, cq.message.chat.id, -DEBT_TASK_NOT_DONE, "Uyga vazifa bajarilmadi")
     await show_result(cq.message, -DEBT_TASK_NOT_DONE, "Uyga vazifa bajarilmadi", new_balance, kmsg)
-    await cq.answer()
 
 
 @dp.callback_query(F.data == "english")
 async def cb_english(cq: CallbackQuery):
+    try:
+        await cq.answer()
+    except Exception:
+        pass
     new_balance, kmsg = await record_and_notify(cq.message.bot, cq.message.chat.id, REWARD_SUBJECT, "Ingiliz tili darsi")
     await show_result(cq.message, REWARD_SUBJECT, "Ingiliz tili darsi", new_balance, kmsg)
-    await cq.answer()
 
 
 @dp.callback_query(F.data == "math")
 async def cb_math(cq: CallbackQuery):
+    try:
+        await cq.answer()
+    except Exception:
+        pass
     new_balance, kmsg = await record_and_notify(cq.message.bot, cq.message.chat.id, REWARD_SUBJECT, "Matematika darsi")
     await show_result(cq.message, REWARD_SUBJECT, "Matematika darsi", new_balance, kmsg)
-    await cq.answer()
 
 
 @dp.callback_query(F.data == "haq_qarz_menu")
 async def cb_haq_qarz_menu(cq: CallbackQuery):
-    await cq.message.answer("Nima qilamiz?", reply_markup=haq_qarz_menu())
-    await cq.answer()
+    try:
+        await cq.answer()
+    except Exception:
+        pass
+    try:
+        await cq.message.edit_text("Nima qilamiz?", reply_markup=haq_qarz_menu())
+    except Exception:
+        await cq.message.answer("Nima qilamiz?", reply_markup=haq_qarz_menu())
 
 
 @dp.callback_query(F.data == "back_main")
 async def cb_back_main(cq: CallbackQuery):
-    await cq.message.answer("Bosh menyu:", reply_markup=main_menu())
-    await cq.answer()
+    try:
+        await cq.answer()
+    except Exception:
+        pass
+    try:
+        await cq.message.edit_text("Bosh menyu:", reply_markup=main_menu())
+    except Exception:
+        await cq.message.answer("Bosh menyu:", reply_markup=main_menu())
 
 
 @dp.callback_query(F.data == "balance")
 async def cb_balance(cq: CallbackQuery):
-    await send_balance(cq.message)
-    await cq.answer()
+    try:
+        await cq.answer()
+    except Exception:
+        pass
+    try:
+        await cq.message.edit_text(balance_status_text(), reply_markup=main_menu())
+    except Exception:
+        await send_balance(cq.message)
 
 
 @dp.callback_query(F.data == "kassa")
 async def cb_kassa(cq: CallbackQuery):
+    try:
+        await cq.answer()
+    except Exception:
+        pass
     await send_kassa(cq.message)
-    await cq.answer()
 
 
 @dp.callback_query(F.data == "pay_settle")
 async def cb_pay_settle(cq: CallbackQuery, state: FSMContext):
+    try:
+        await cq.answer()
+    except Exception:
+        pass
     bal = get_balance()
     if bal == 0:
         await cq.message.answer("Hisob allaqachon 0 so'm — to'lov shart emas.", reply_markup=main_menu())
-        await cq.answer()
         return
     await cq.message.answer("Qancha pul to'ladingiz? Summani kiriting (masalan: 20000):")
     await state.set_state(Form.waiting_payment_amount)
-    await cq.answer()
 
 
 @dp.callback_query(F.data == "spend")
 async def cb_spend(cq: CallbackQuery, state: FSMContext):
+    try:
+        await cq.answer()
+    except Exception:
+        pass
     await cq.message.answer(
         f"💵 Kassadagi mavjud pul: {fmt(get_kassa_cash())} so'm\n\n"
         "Qancha sarfladingiz? Summani kiriting (masalan: 20000):"
     )
     await state.set_state(Form.waiting_spend_amount)
-    await cq.answer()
 
 
 @dp.callback_query(F.data == "history")
 async def cb_history(cq: CallbackQuery):
+    try:
+        await cq.answer()
+    except Exception:
+        pass
     await send_history(cq.message)
-    await cq.answer()
 
 
 @dp.callback_query(F.data == "book")
 async def cb_book(cq: CallbackQuery, state: FSMContext):
+    try:
+        await cq.answer()
+    except Exception:
+        pass
     await cq.message.answer("Kitob necha pulga sotib olindi? Faqat summani yozing (masalan: 25000)")
     await state.set_state(Form.waiting_book_price)
-    await cq.answer()
 
 
 @dp.callback_query(F.data == "manual")
 async def cb_manual(cq: CallbackQuery, state: FSMContext):
+    try:
+        await cq.answer()
+    except Exception:
+        pass
     await cq.message.answer(
         "Qancha yozay? Musbat son (masalan 5000) — dadangiz sizdan qarzdor bo'ladi.\n"
         "Manfiy son (masalan -3000) — siz dadangizdan haqdor bo'lasiz.\n"
         "Summani yozing:"
     )
     await state.set_state(Form.waiting_manual_amount)
-    await cq.answer()
 
 
 # ---------- FSM matn qadamlari (ustunlik beriladi) ----------
