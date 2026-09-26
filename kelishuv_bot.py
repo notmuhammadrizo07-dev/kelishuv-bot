@@ -34,10 +34,12 @@ MANTIQ:
 """
 
 import asyncio
+import os
 import re
 import sqlite3
 from datetime import datetime, timedelta
 
+from aiohttp import web
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command, CommandStart, StateFilter
 from aiogram.fsm.context import FSMContext
@@ -45,8 +47,8 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
-BOT_TOKEN = "8709820987:AAG3eY4_sBEgtUDvlDyaJpZ4h65fKNtwPz4"
-DB_PATH = "kelishuv.db"
+BOT_TOKEN = os.getenv("BOT_TOKEN", "8709820987:AAG3eY4_sBEgtUDvlDyaJpZ4h65fKNtwPz4")
+DB_PATH = os.getenv("DB_PATH", "kelishuv.db")
 
 REWARD_TASK_DONE = 5000
 DEBT_TASK_NOT_DONE = 10000
@@ -690,11 +692,29 @@ async def fallback_handler(message: Message):
     )
 
 
+async def run_web_server():
+    app = web.Application()
+    async def ping_handler(request):
+        return web.Response(text="Kelishuv Bot ishlayapti!")
+    app.router.add_get("/", ping_handler)
+    app.router.add_get("/health", ping_handler)
+
+    port = int(os.getenv("PORT", 10000))
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+
+
 async def main():
     init_db()
     bot = Bot(token=BOT_TOKEN)
     await bot.delete_webhook(drop_pending_updates=True)
     asyncio.create_task(daily_digest_loop(bot))
+    try:
+        asyncio.create_task(run_web_server())
+    except Exception as e:
+        print(f"Web server xatosi: {e}")
     await dp.start_polling(bot)
 
 
